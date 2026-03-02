@@ -1,2 +1,2 @@
-# blue-team-lab-network
+# blue-team-lab
 Blue Team lab exercises
