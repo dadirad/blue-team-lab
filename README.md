@@ -11,11 +11,11 @@ These labs teach a repeatable investigation workflow:
 
 ## What’s in this repo
 
-files/
-network_lab.ipynb
-endpoint_lab.ipynb
-network_events.csv
-endpoint_events.csv
+- files/
+- network_lab.ipynb
+- endpoint_lab.ipynb
+- network_events.csv
+- endpoint_events.csv
 
 
 ### Lab outputs (what participants produce)
