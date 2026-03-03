@@ -1,2 +1,2 @@
 # blue-team-lab
-Blue Team lab exercises
+Blue Team Lab exercises
