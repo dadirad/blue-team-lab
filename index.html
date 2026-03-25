@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Blue Team Network Lab</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@300;400;600;700&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:#0a0e1a;color:#e0e6f0;font-family:'Inter',sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+  #header{background:#0d1224;border-bottom:1px solid #1e2d4a;padding:8px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+  #header .logo{font-family:'Share Tech Mono',monospace;color:#00d4ff;font-size:13px;letter-spacing:2px;}
+  #header .slide-counter{font-size:12px;color:#4a6080;font-family:'Share Tech Mono',monospace;}
+  #slide-area{flex:1;display:flex;align-items:center;justify-content:center;padding:20px;overflow:hidden;}
+  .slide{display:none;width:100%;max-width:940px;animation:fadeIn .3s ease;}
+  .slide.active{display:flex;flex-direction:column;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+  .slide-inner{background:linear-gradient(135deg,#0d1630 0%,#111827 60%,#0a1020 100%);border:1px solid #1e3a5f;border-radius:12px;padding:36px 44px;min-height:430px;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.6);}
+  .slide-inner::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#00d4ff,#0066ff,#7c3aed);}
+  .wm{position:absolute;bottom:10px;right:14px;font-size:10px;color:#2a4060;font-family:'Share Tech Mono',monospace;letter-spacing:1px;pointer-events:none;}
+  .grid-bg{position:absolute;inset:0;background-image:linear-gradient(rgba(0,212,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;}
+
+  /* TITLE */
+  .s-title .slide-inner{align-items:center;text-align:center;background:linear-gradient(135deg,#050d1f 0%,#0d1a3a 50%,#071020 100%);}
+  .mt{font-size:2.1em;font-weight:700;color:#fff;line-height:1.2;margin-bottom:10px;}
+  .mt span{color:#00d4ff;}
+  .msub{font-size:0.9em;color:#7090b0;margin-bottom:20px;}
+  .badge{background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.3);color:#00d4ff;font-family:'Share Tech Mono',monospace;font-size:11px;padding:6px 16px;border-radius:4px;letter-spacing:2px;display:inline-block;margin:4px;}
+
+  /* SECTION */
+  .s-section .slide-inner{background:linear-gradient(135deg,#080f20 0%,#0f1e3a 100%);}
+  .sec-lbl{font-family:'Share Tech Mono',monospace;font-size:11px;color:#00d4ff;letter-spacing:3px;text-transform:uppercase;margin-bottom:12px;}
+  .sec-ttl{font-size:1.9em;font-weight:700;color:#fff;line-height:1.2;}
+  .sec-desc{margin-top:14px;color:#7090b0;font-size:0.9em;line-height:1.6;max-width:620px;}
+
+  /* COMMON */
+  .h1{font-size:1.35em;font-weight:700;color:#fff;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid #1e3a5f;}
+  .h1 span{color:#00d4ff;}
+  .sub-label{font-family:'Share Tech Mono',monospace;font-size:10px;color:#00d4ff;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;}
+
+  /* LISTS */
+  .sl{list-style:none;display:flex;flex-direction:column;gap:9px;}
+  .sl li{display:flex;align-items:flex-start;gap:11px;font-size:0.87em;line-height:1.5;color:#c8d8e8;}
+  .sl li .dot{width:6px;height:6px;border-radius:50%;background:#00d4ff;margin-top:6px;flex-shrink:0;}
+  .sl li .kw{color:#00d4ff;font-weight:600;}
+
+  /* TABLES */
+  .tbl{width:100%;border-collapse:collapse;font-size:0.8em;margin-top:6px;}
+  .tbl th{background:#0d2040;color:#00d4ff;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:7px 10px;text-align:left;border-bottom:1px solid #1e3a5f;}
+  .tbl td{padding:7px 10px;border-bottom:1px solid #111827;color:#c0d0e0;vertical-align:top;line-height:1.4;}
+  .tbl tr:hover td{background:rgba(0,212,255,0.04);}
+
+  /* TAGS */
+  .tag{background:rgba(0,212,255,0.12);color:#00d4ff;font-family:'Share Tech Mono',monospace;font-size:10px;padding:2px 7px;border-radius:3px;white-space:nowrap;display:inline-block;}
+  .tag-g{background:rgba(0,200,100,0.12);color:#44dd88;}
+  .tag-w{background:rgba(255,140,0,0.15);color:#ffaa33;}
+  .tag-r{background:rgba(255,50,50,0.15);color:#ff6060;}
+
+  /* CALLOUT */
+  .callout{background:rgba(0,212,255,0.07);border-left:3px solid #00d4ff;border-radius:0 6px 6px 0;padding:12px 16px;margin:10px 0;font-size:0.85em;color:#a0c8e0;line-height:1.6;}
+  .callout.warn{border-color:#ff9933;background:rgba(255,153,51,0.07);color:#ffd0a0;}
+  .callout.green{border-color:#33cc77;background:rgba(51,204,119,0.07);color:#a0ffc8;}
+  .callout.purple{border-color:#c084fc;background:rgba(192,132,252,0.07);color:#e0c8ff;}
+
+  /* GRID CARDS */
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:8px;}
+  .three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:8px;}
+  .four-col{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-top:8px;}
+  .card{background:#060c18;border:1px solid #1e3a5f;border-radius:8px;padding:14px 16px;}
+  .card h4{font-size:0.78em;color:#00d4ff;font-family:'Share Tech Mono',monospace;letter-spacing:1px;margin-bottom:8px;text-transform:uppercase;}
+  .card p{font-size:0.82em;color:#a0b8cc;line-height:1.55;}
+  .card.warn{border-color:#ff9933;}
+  .card.warn h4{color:#ffaa33;}
+  .card.green{border-color:#33cc77;}
+  .card.green h4{color:#44dd88;}
+
+  /* STEPS */
+  .steps{display:flex;gap:0;margin-top:10px;}
+  .step-box{flex:1;background:#060c18;border:1px solid #1e3a5f;border-radius:0;padding:14px 10px;text-align:center;position:relative;}
+  .step-box:first-child{border-radius:8px 0 0 8px;}
+  .step-box:last-child{border-radius:0 8px 8px 0;}
+  .step-box .num{width:28px;height:28px;border-radius:50%;background:#0d2040;border:2px solid #00d4ff;color:#00d4ff;font-family:'Share Tech Mono',monospace;font-size:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;}
+  .step-box .step-title{font-size:0.75em;font-weight:700;color:#00d4ff;margin-bottom:4px;font-family:'Share Tech Mono',monospace;letter-spacing:1px;text-transform:uppercase;}
+  .step-box .step-body{font-size:0.75em;color:#8090a8;line-height:1.4;}
+  .arrow{display:flex;align-items:center;color:#1e3a5f;font-size:18px;padding:0 2px;flex-shrink:0;}
+
+  /* PILL */
+  .pill{display:inline-block;background:rgba(0,212,255,0.1);color:#00d4ff;font-family:'Share Tech Mono',monospace;font-size:10px;padding:3px 10px;border-radius:20px;margin:2px;border:1px solid rgba(0,212,255,0.2);}
+  .pill.g{background:rgba(0,200,100,0.12);color:#44dd88;border-color:rgba(0,200,100,0.25);}
+  .pill.r{background:rgba(255,60,60,0.12);color:#ff7070;border-color:rgba(255,60,60,0.25);}
+
+  /* NAV */
+  #nav{background:#0d1224;border-top:1px solid #1e2d4a;padding:11px 24px;display:flex;align-items:center;gap:12px;flex-shrink:0;}
+  .nav-btn{background:#0d2040;border:1px solid #1e3a5f;color:#7090b0;padding:7px 18px;border-radius:5px;cursor:pointer;font-size:13px;transition:all .2s;font-family:'Inter',sans-serif;}
+  .nav-btn:hover{background:#1a3a6a;color:#fff;border-color:#00d4ff;}
+  .nav-btn:disabled{opacity:0.3;cursor:not-allowed;}
+  #progress{flex:1;height:3px;background:#1a2840;border-radius:2px;overflow:hidden;}
+  #progress-fill{height:100%;background:linear-gradient(90deg,#00d4ff,#0066ff);border-radius:2px;transition:width .3s;}
+  #thumb-nav{display:flex;gap:3px;flex-wrap:wrap;max-width:380px;}
+  .thumb{width:16px;height:10px;border-radius:2px;background:#1a2840;cursor:pointer;transition:background .2s;}
+  .thumb.active{background:#00d4ff;}
+  .thumb:hover{background:#0066ff;}
+  ::-webkit-scrollbar{width:4px;}
+  ::-webkit-scrollbar-track{background:#080e1c;}
+  ::-webkit-scrollbar-thumb{background:#1e3a5f;border-radius:2px;}
+</style>
+</head>
+<body>
+<div id="header">
+  <div class="logo">▶ BLUE TEAM NETWORK LAB</div>
+  <div class="slide-counter" id="counter">01 / 19</div>
+</div>
+<div id="slide-area">
+
+  <!-- SLIDE 1: TITLE -->
+  <div class="slide s-title active">
+    <div class="slide-inner">
+      <div class="grid-bg"></div>
+      <div class="wm">© 2025 The 97 Group</div>
+      <div class="mt">Blue Team<br><span>Network Lab</span></div>
+      <div class="msub">Student Investigation Deck</div>
+      <div class="badge">VALIDATE &nbsp;·&nbsp; TRIAGE &nbsp;·&nbsp; INVESTIGATE &nbsp;·&nbsp; CORRELATE &nbsp;·&nbsp; REPORT</div>
+      <div style="margin-top:16px;font-size:0.82em;color:#4a6080;">Use network telemetry to identify a likely compromised host, build a timeline, and document an incident summary.</div>
+    </div>
+  </div>
+
+  <!-- SLIDE 2: LEARNING OBJECTIVES -->
+  <div class="slide">
+    <div class="slide-inner">
+      <div class="wm">© 2025 The 97 Group</div>
+      <div class="h1">Learning <span>Objectives</span></div>
+      <ul class="sl">
+        <li><div class="dot"></div><div>Explain the role of the Blue Team and Incident Response in cybersecurity</div></li>
+        <li><div class="dot"></div><div>Identify common cyber threats and attack techniques</div></li>
+        <li><div class="dot"></div><div>Monitor systems and analyze security alerts</div></li>
+        <li><div class="dot"></div><div>Apply the incident response lifecycle to real-world scenarios</div></li>
+        <li><div class="dot"></div><div>Perform basic log analysis and triage</div></li>
+        <li><div class="dot"></div><div>Document and communicate incidents effectively</div></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- SLIDE 3: WHAT IS THE BLUE TEAM -->
+  <div class="slide">
+    <div class="slide-inner">
+      <div class="wm">© 2025 The 97 Group</div>
+      <div class="h1">What Is the <span>Blue Team</span>?</div>
+      <ul class="sl">
+        <li><div class="dot"></div><div><span class="kw">Blue Team = defenders</span> who detect, respond to, and learn from cyber attacks</div></li>
+        <li><div class="dot"></div><div><span class="kw">Day-to-day:</span> monitoring, triage, investigation, containment, reporting, and improvement</div></li>
+        <li><div class="dot"></div><div><span class="kw">Goal:</span> reduce attacker dwell time and limit business impact</div></li>
+      </ul>
+      <div class="callout" style="margin-top:18px;">Good blue team analysis is not only about spotting something odd — it is about <strong>explaining why it matters and what should happen next.</strong></div>
+    </div>
+  </div>
+
+  <!-- SLIDE 4: WHAT IS IR -->
+  <div class="slide">
+    <div class="slide-inner">
+      <div class="wm">© 2025 The 97 Group</div>
+      <div class="h1">What Is <span>Incident Response</span>?</div>
+      <ul class="sl">
+        <li><div class="dot"></div><div>IR is a <span class="kw">structured way</span> to handle suspected or confirmed security incidents</div></li>
+        <li><div class="dot"></div><div><span class="kw">Goal:</span> limit impact fast while preserving evidence and restoring operations</div></li>
+        <li><div class="dot"></div><div>IR produces <span class="kw">improvements</span> — better detections, better logging, stronger controls</div></li>
+      </ul>
+      <div style="margin-top:18px;" class="sub-label">IR Lifecycle</div>
+      <div class="steps">
+        <div class="step-box"><div class="num">1</div><div class="step-title">Prepare</div><div class="step-body">Logging, access, roles, playbooks</div></div>
+        <div class="arrow">›</div>
+        <div class="step-box"><div class="num">2</div><div class="step-title">Detect</div><div class="step-body">Validate alert, gather evidence</div></div>
+        <div class="arrow">›</div>
+        <div class="step-box"><div class="num">3</div><div class="step-title">Contain</div><div class="step-body">Isolate host, block domain/IP</div></div>
+        <div class="arrow">›</div>
+        <div class="step-box"><div class="num">4</div><div class="step-title">Eradicate</div><div class="step-body">Remove persistence, patch</div></div>
+        <div class="arrow">›</div>
+        <div class="step-box"><div class="num">5</div><div class="step-title">Recover</div><div class="step-body">Restore and monitor</div></div>
+        <div class="arrow">›</div>
+        <div class="step-box"><div class="num">6</div><div class="step-title">Learn</div><div class="step-body">Tune detections, improve visibility</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 5: INVESTIGATION APPROACH -->
+  <div class="slide">
+    <div class="slide-inner">
+      <div class="wm">© 2025 The 97 Group</div>
+      <div class="h1">Investigation <span>Approach</span></div>
+      <ul class="sl" style="margin-bottom:14px;">
+        <li><div class="dot"></div><div><span class="kw">Start broad:</span> validate event types and basic counts</div></li>
+        <li><div class="dot"></div><div><span class="kw">Pick an entity:</span> choose one host to investigate first</div></li>
+        <li><div class="dot"></div><div><span class="kw">Pivot for evidence:</span> domain, URI, destination IP and port</div></li>
+        <li><div class="dot"></div><div><span class="kw">Build a timeline:</span> order events to explain the sequence</div></li>
+        <li><div class="dot"></div><div><span class="kw">Document:</span> confidence level, containment action, detection improvement</div></li>
+      </ul>
+      <div class="callout warn">Analyst habit: move from <strong>lead → context → conclusion.</strong> Do not jump from one interesting indicator directly to a final claim.</div>
+    </div>
+  </div>
+
+  <!-- SLIDE 6: SCENARIO / MISSION -->
+  <div class="slide s-section">
+    <div class="slide-inner">
+      <div class="grid-bg"></div>
+      <div class="wm">© 2025 The 97 Group</div>
+      <div class="sec-lbl">Today's Lab</div>
+      <div class="sec-ttl">Your Mission</div>
+      <div class="sec-desc">You will work like a beginner blue team analyst reviewing a short window of network activity.</div>
+      <div class="three-col" style="margin-top:20px;">
+        <div class="card"><h4>Your Mission</h4><p>Identify the host that looks most likely to be compromised and explain what evidence supports that conclusion.</p></div>
+        <div class="card"><h4>Your Evidence</h4><p>DNS, HTTP, TLS, and connection events help you see domains, paths, destinations, and repeated outbound behavior.</p></div>
+        <div class="card green"><h4>Your Output</h4><p>A short incident summary with the likely host, suspicious artifacts, timeline clues, and containment actions.</p></div>
+      </div>
+      <div class="callout" style="margin-top:14px;font-size:0.8em;"><strong>Analyst reminder:</strong> The top-ranked host is a lead, not proof. Validate it with timeline context and correlated findings.</div>
+    </div>
+  </div>
+
+  <!-- SLIDE 7: EVENT TYPES -->
+  <div class="slide">
+    <div class="slide-inner">
+      <div class="wm">© 2025 The 97 Group</div>
+      <div class="h1">Event Types: <span>Each Tells a Different Story</span></div>
+      <div class="four-col">
+        <div class="card" style="border-color:#00d4ff;text-align:center;">
+          <div style="background:#00d4ff;color:#0a0e1a;font-family:'Share Tech Mono',monospace;font-weight:700;font-size:1.1em;padding:6px;border-radius:4px;margin-bottom:10px;">DNS</div>
+          <p>What domain did the host try to resolve?</p>
+        </div>
+        <div class="card" style="border-color:#0066ff;text-align:center;">
+          <div style="background:#0066ff;color:#fff;font-family:'Share Tech Mono',monospace;font-weight:700;font-size:1.1em;padding:6px;border-radius:4px;margin-bottom:10px;">HTTP</div>
+          <p>What web host and path were requested?</p>
+        </div>
+        <div class="card" style="border-color:#33cc77;text-align:center;">
+          <div style="background:#33cc77;color:#0a0e1a;font-family:'Share Tech Mono',monospace;font-weight:700;font-size:1.1em;padding:6px;border-radius:4px;margin-bottom:10px;">TLS</div>
+          <p>What server name was presented during encrypted traffic?</p>
+        </div>
+        <div class="card" style="border-color:#ffaa33;text-align:center;">
+          <div style="background:#ffaa33;color:#0a0e1a;font-family:'Share Tech Mono',monospace;font-weight:700;font-size:1.1em;padding:6px;border-radius:4px;margin-bottom:10px;">CONN</div>
+          <p>Who connected to whom, on what port, and how often?</p>
+        </div>
+      </div>
+      <div class="callout" style="margin-top:14px;">
+        <strong>Why this matters:</strong> &nbsp; A rare domain can be a lead &nbsp;·&nbsp; A payload-like URI can suggest delivery &nbsp;·&nbsp; Regular connection intervals can suggest beaconing &nbsp;·&nbsp; <strong>No single field is enough — correlation is the skill.</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 8: SOC WORKFLOW -->
+  <div class="slide">
+    <div class="slide-inner">
+      <div class="wm">© 2025 The 97 Group</div>
+      <div class="h1">SOC <span>Workflow</span></div>
+      <div style="font-size:0.85em;color:#7090b0;margin-bottom:14px;">Follow the same sequence a SOC analyst would use to reduce noise and build confidence.</div>
+      <div class="steps">
+        <div class="step-box"><div class="num">1</div><div class="step-title">Validate</div><div class="step-body">Confirm columns and event types available</div></div>
+        <div class="arrow">›</div>
+        <div class="step-box"><div class="num">2</div><div class="step-title">Triage</div><div class="step-body">Review suspicious-host ranking to choose where to look first</div></div>
+        <div class="arrow">›</div>
+        <div class="step-box"><div class="num">3</div><div class="step-title">Investigate</div><div class="step-body">Inspect domains, URIs, and destinations linked to that host</div></div>
+        <div class="arrow">›</div>
+        <div class="step-box"><div class="num">4</div><div class="step-title">Correlate</div><div class="step-body">Connect indicators across event types and over time</div></div>
+        <div class="arrow">›</div>
+        <div class="step-box"><div class="num">5</div><div class="step-title">Report</div><div class="step-body">Write what happened, why you believe it, and what to do next</div></div>
+      </div>
+      <div class="callout" style="margin-top:14px;">In a SIEM: ingest logs → search → pivot → build a timeline → document</div>
+    </div>
+  </div>
+
+  <!-- SLIDE 9: ATTACK PATTERN -->
+  <div class="slide">
+    <div class="slide-inner">
+      <div class="wm">© 2025 The 97 Group</div>
+      <div class="h1">What the <span>Attack Pattern Looks Like</span></div>
+      <table class="tbl">
+        <thead><tr><th>Stage</th><th>What You See in Network Logs</th><th>Signal Type</th></tr></thead>
+        <tbody>
+          <tr><td>Initial access</td><td>User action leads to suspicious domain lookups</td><td><span class="tag">DNS</span></td></tr>
+          <tr><td>Delivery / staging</td><td>Payload-like HTTP paths (e.g. <code>/payload.exe</code>)</td><td><span class="tag">HTTP</span></td></tr>
+          <tr><td>C2 hint</td><td>Repeated outbound connections to the same destination</td><td><span class="tag">CONN</span></td></tr>
+        </tbody>
+      </table>
+      <div class="callout warn" style="margin-top:14px;"><strong>Key idea:</strong> One signal is a lead. Correlation across DNS + HTTP + CONN builds confidence.</div>
+    </div>
+  </div>
+
+  <!-- SLIDE 10: RECOGNITION PATTERNS -->
+  <div class="slide">
+    <div class="slide-inner">
+      <div class="wm">© 2025 The 97 Group</div>
+      <div class="h1">What to <span>Look For</span></div>
+      <div class="two-col">
+        <div class="card"><h4>Rare DNS Domain</h4><p>Uncommon domains can point to low-prevalence infrastructure. Rare does not equal malicious, but it deserves a second look.</p></div>
+        <div class="card"><h4>Payload-Like HTTP Path</h4><p>Paths such as download, install, update, or extensions like <code>.exe</code> or <code>.ps1</code> may indicate delivery or staging.</p></div>
+        <div class="card"><h4>Repeated Outbound Cadence</h4><p>Regular intervals to the same destination can indicate beaconing or recurring task behavior.</p></div>
+        <div class="card"><h4>External Destinations</h4><p>A host that talks to many external IPs or unfamiliar infrastructure can stand out during triage.</p></div>
+      </div>
+      <div class="callout" style="margin-top:12px;"><strong>Correlation across event types:</strong> Confidence increases when the same host shows suspicious DNS, HTTP, and repeated connection behavior near the same time.</div>
+    </div>
+  </div>
+
+  <!-- SLIDE 11: COMMON BEGINNER ERRORS -->
+  <div class="slide">
+    <div class="slide-inner">
+      <div class="wm">© 2025 The 97 Group</div>
+      <div class="h1">Common <span>Beginner Errors</span></div>
+      <div class="two-col">
+        <div class="card warn"><h4>Treating the top score as proof</h4><p>The ranking helps you prioritize, but you still need to validate with evidence.</p></div>
+        <div class="card warn"><h4>Calling every rare domain malicious</h4><p>Rare only means uncommon in this dataset. Context matters.</p></div>
+        <div class="card warn"><h4>Looking at one field in isolation</h4><p>A URI or domain is stronger when tied to the same host and time window.</p></div>
+        <div class="card warn"><h4>Ignoring timing</h4><p>A timeline helps distinguish related activity from unrelated noise.</p></div>
+      </div>
+      <div class="callout warn" style="margin-top:12px;"><strong>Writing findings without confidence language.</strong> State what you know, what you infer, and what you still need to verify.</div>
+    </div>
+  </div>
+
+  <!-- SLIDE 12: TASKS 1-3 (TRIAGE) -->
+  <div class="slide">
+    <div class="slide-inner">
+      <div class="wm">© 2025 The 97 Group</div>
+      <div class="h1">Lab Tasks 1–3: <span>Triage</span></div>
+      <div style="font-size:0.84em;color:#7090b0;margin-bottom:14px;">Start with prioritization, then inspect the host that deserves the most attention.</div>
+      <div class="three-col">
+        <div class="card"><h4>Task 1 — Validate the Data</h4><p>Review the schema and event counts. What evidence types are available to you?</p></div>
+        <div class="card"><h4>Task 2 — Review Top Hosts</h4><p>Look at the suspicious-host ranking. Which host would you investigate first, and why?</p></div>
+        <div class="card green"><h4>Task 3 — Select a Target</h4><p>Accept the suggested host or choose a different one if your reasoning supports it.</p></div>
+      </div>
+      <div class="callout" style="margin-top:14px;">
+        <strong>Write down as you go:</strong> &nbsp; Which host did you pick? &nbsp;·&nbsp; What made it stand out? &nbsp;·&nbsp; What evidence do you still need before you would escalate?
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 13: TASKS 4-6 (INVESTIGATE) -->
+  <div class="slide">
+    <div class="slide-inner">
+      <div class="wm">© 2025 The 97 Group</div>
+      <div class="h1">Lab Tasks 4–6: <span>Investigate</span></div>
+      <div style="font-size:0.84em;color:#7090b0;margin-bottom:14px;">Now turn host-level suspicion into a defensible finding.</div>
+      <div class="three-col">
+        <div class="card"><h4>Task 4 — Find Suspicious Artifacts</h4><p>Identify rare domains, unusual web paths, or suspicious destinations associated with the host.</p></div>
+        <div class="card"><h4>Task 5 — Check for Beaconing</h4><p>Look for repeated outbound connections to the same destination and note the interval pattern.</p></div>
+        <div class="card green"><h4>Task 6 — Build the Timeline</h4><p>Sequence the events so you can explain what likely happened first, next, and last.</p></div>
+      </div>
+      <div class="callout" style="margin-top:14px;">
+        <strong>Deliverable checklist:</strong> &nbsp; Likely compromised host &nbsp;·&nbsp; Most suspicious domain, path, or IP &nbsp;·&nbsp; Why the evidence matters &nbsp;·&nbsp; One containment action &nbsp;·&nbsp; One detection improvement
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 14: BY THE END -->
+  <div class="slide">
+    <div class="slide-inner">
+      <div class="wm">© 2025 The 97 Group</div>
+      <div class="h1">By the End <span>You Should Be Able To</span></div>
+      <ul class="sl">
+        <li><div class="dot"></div><div><span class="kw">Name</span> the internal host you would escalate</div></li>
+        <li><div class="dot"></div><div><span class="kw">Connect</span> a suspicious domain or URI to that host</div></li>
+        <li><div class="dot"></div><div><span class="kw">Spot</span> repeated outbound connections that may indicate beaconing</div></li>
+        <li><div class="dot"></div><div><span class="kw">Explain</span> your reasoning clearly instead of only listing indicators</div></li>
+      </ul>
+      <div class="callout warn" style="margin-top:18px;"><strong>Analyst reminder:</strong> The top-ranked host is a lead, not proof. Validate it with timeline context and correlated findings before escalating.</div>
+    </div>
+  </div>
+
+  <!-- SLIDE 15: HOW TO WRITE THE SUMMARY -->
+  <div class="slide">
+    <div class="slide-inner">
+      <div class="wm">© 2025 The 97 Group</div>
+      <div class="h1">Writing Your <span>Incident Summary</span></div>
+      <div style="font-size:0.84em;color:#7090b0;margin-bottom:14px;">Keep it short, evidence-based, and easy for another analyst to follow.</div>
+      <div class="two-col">
+        <div class="card">
+          <h4>Suggested Outline</h4>
+          <ul class="sl" style="gap:6px;">
+            <li><div class="dot"></div><div style="font-size:0.82em;">State the host you believe is most suspicious</div></li>
+            <li><div class="dot"></div><div style="font-size:0.82em;">Describe the most important suspicious artifacts</div></li>
+            <li><div class="dot"></div><div style="font-size:0.82em;">Explain the timing or repeated pattern that strengthens your conclusion</div></li>
+            <li><div class="dot"></div><div style="font-size:0.82em;">Recommend containment and one detection improvement</div></li>
+          </ul>
+        </div>
+        <div class="card green">
+          <h4>Confidence Language</h4>
+          <ul class="sl" style="gap:6px;">
+            <li><div class="dot"></div><div style="font-size:0.82em;"><span class="kw">High:</span> multiple indicators align across host, destination, and timing</div></li>
+            <li><div class="dot"></div><div style="font-size:0.82em;"><span class="kw">Medium:</span> evidence is suspicious but has plausible benign explanations</div></li>
+            <li><div class="dot"></div><div style="font-size:0.82em;"><span class="kw">Low:</span> interesting lead, but not enough correlation yet</div></li>
+          </ul>
+        </div>
+      </div>
+      <div class="callout" style="margin-top:12px;">Be specific about what you <strong>observed</strong> versus what you <strong>infer.</strong></div>
+    </div>
+  </div>
+
+  <!-- SLIDE 16: SIEM WORKFLOW DETAIL -->
+  <div class="slide">
+    <div class="slide-inner">
+      <div class="wm">© 2025 The 97 Group</div>
+      <div class="h1">SIEM <span>Workflow Detail</span></div>
+      <table class="tbl">
+        <thead><tr><th>Step</th><th>Action</th><th>What You're Looking For</th></tr></thead>
+        <tbody>
+          <tr><td><span class="tag">1</span></td><td>Start broad — count events by type</td><td>Confirm DNS, HTTP, TLS, CONN are present</td></tr>
+          <tr><td><span class="tag">2</span></td><td>Pick an entity — <code>src_ip</code> and <code>src_host</code></td><td>Internal host with most suspicious activity mix</td></tr>
+          <tr><td><span class="tag">3</span></td><td>Pivot — domain (DNS), URI (HTTP), destination IP and port</td><td>Rare domains, payload-like paths, unusual IPs</td></tr>
+          <tr><td><span class="tag">4</span></td><td>Timeline — sort by time and review sequence</td><td>DNS → HTTP download → repeated CONN pattern</td></tr>
+          <tr><td><span class="tag">5</span></td><td>Scope — check if other hosts hit the same domain</td><td>Blast radius — is this one host or many?</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SLIDE 17: WRAP-UP / TITLE REPEAT -->
+  <div class="slide s-section">
+    <div class="slide-inner">
+      <div class="grid-bg"></div>
+      <div class="wm">© 2025 The 97 Group</div>
+      <div class="sec-lbl">Hands-On SOC Workflow</div>
+      <div class="sec-ttl">Blue Team Network Lab</div>
+      <div class="sec-desc">Use network telemetry to identify a likely compromised host, correlate suspicious activity, and write a concise incident summary.</div>
+      <div style="margin-top:20px;">
+        <span class="pill">Validate</span>
+        <span style="color:#1e3a5f;margin:0 4px;">›</span>
+        <span class="pill">Triage</span>
+        <span style="color:#1e3a5f;margin:0 4px;">›</span>
+        <span class="pill">Investigate</span>
+        <span style="color:#1e3a5f;margin:0 4px;">›</span>
+        <span class="pill">Correlate</span>
+        <span style="color:#1e3a5f;margin:0 4px;">›</span>
+        <span class="pill g">Report</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 18: DEBRIEF -->
+  <div class="slide">
+    <div class="slide-inner">
+      <div class="wm">© 2025 The 97 Group</div>
+      <div class="h1">Debrief & <span>Stretch Thinking</span></div>
+      <div class="three-col">
+        <div class="card green"><h4>Success Looks Like This</h4><p>You choose a host, justify it with evidence, connect the indicators, and recommend next actions.</p></div>
+        <div class="card"><h4>Debrief Questions</h4><p>What evidence was strongest? What was only a lead? What would you want next from EDR, proxy, or endpoint logs?</p></div>
+        <div class="card"><h4>Stretch Thinking</h4><p>How would your conclusion change if the host showed the same DNS but no repeated connection pattern?</p></div>
+      </div>
+      <div class="callout" style="margin-top:14px;">Remember: good blue team analysis is not only about spotting something odd — it is about <strong>explaining why it matters and what should happen next.</strong></div>
+    </div>
+  </div>
+
+  <!-- SLIDE 19: KEY TAKEAWAYS -->
+  <div class="slide">
+    <div class="slide-inner">
+      <div class="wm">© 2025 The 97 Group</div>
+      <div class="h1">Key <span>Takeaways</span></div>
+      <ul class="sl">
+        <li><div class="dot"></div><div><span class="kw">Network logs</span> tell you where a host talked — DNS, HTTP, TLS, and CONN each reveal a different piece.</div></li>
+        <li><div class="dot"></div><div><span class="kw">Rare DNS + payload URI + beaconing</span> together build a strong case. One signal alone is just a lead.</div></li>
+        <li><div class="dot"></div><div><span class="kw">Timing matters.</span> A timeline separates related activity from background noise.</div></li>
+        <li><div class="dot"></div><div><span class="kw">Confidence language</span> — high, medium, low — keeps your findings honest and actionable.</div></li>
+        <li><div class="dot"></div><div>Your <span class="kw">incident summary</span> is your product. Evidence first, inference second, action third.</div></li>
+      </ul>
+      <div class="callout green" style="margin-top:16px;"><strong>Lab link:</strong> <code style="font-size:0.85em;">colab.research.google.com/github/dadirad/blue-team-lab/blob/main/files/network_lab.ipynb</code></div>
+    </div>
+  </div>
+
+</div>
+
+<div id="nav">
+  <button class="nav-btn" id="prev-btn" onclick="changeSlide(-1)" disabled>← Prev</button>
+  <div id="progress"><div id="progress-fill"></div></div>
+  <button class="nav-btn" id="next-btn" onclick="changeSlide(1)">Next →</button>
+  <div id="thumb-nav"></div>
+</div>
+
+<script>
+  const slides=document.querySelectorAll('.slide');
+  const total=slides.length;
+  let cur=0;
+  const tn=document.getElementById('thumb-nav');
+  slides.forEach((_,i)=>{
+    const t=document.createElement('div');
+    t.className='thumb'+(i===0?' active':'');
+    t.onclick=()=>goTo(i);
+    tn.appendChild(t);
+  });
+  function goTo(n){
+    slides[cur].classList.remove('active');
+    document.querySelectorAll('.thumb')[cur].classList.remove('active');
+    cur=n;
+    slides[cur].classList.add('active');
+    document.querySelectorAll('.thumb')[cur].classList.add('active');
+    document.getElementById('counter').textContent=String(cur+1).padStart(2,'0')+' / '+String(total).padStart(2,'0');
+    document.getElementById('progress-fill').style.width=((cur+1)/total*100)+'%';
+    document.getElementById('prev-btn').disabled=cur===0;
+    document.getElementById('next-btn').disabled=cur===total-1;
+  }
+  function changeSlide(d){goTo(Math.min(total-1,Math.max(0,cur+d)));}
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key===' ')changeSlide(1);
+    if(e.key==='ArrowLeft')changeSlide(-1);
+  });
+  goTo(0);
+</script>
+</body>
+</html>
